@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "366591736517",
+    "project_id": "omegaproject-35a47",
+    "storage_bucket": "omegaproject-35a47.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366591736517:android:9b471375c65d3b07eb4eac",
+        "android_client_info": {
+          "package_name": "com.example.interview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzM0hCqXwK3SeEYykYRw6OrMPXZYiVils"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
