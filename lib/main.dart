@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:interview/screens/home.dart';
+import 'package:interview/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,11 +13,14 @@ class InterviewApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Interview Application',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+          textTheme: const TextTheme(
+              bodyLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              bodySmall: TextStyle(fontSize: 14, fontStyle: FontStyle.italic))),
       home: const HomePage(),
     );
   }

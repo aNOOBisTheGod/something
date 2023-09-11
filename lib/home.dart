@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:interview/wrong-phones-screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -16,11 +18,19 @@ class _HomePageState extends State<HomePage> {
   String? url;
   RemoteConfigUpdate? update;
   StreamSubscription? subscription;
+  bool wrongDevice = false;
 
   final FirebaseRemoteConfig _remoteConfig = FirebaseRemoteConfig.instance;
 
   Future<void> _initConfig() async {
     SharedPreferences instance = await SharedPreferences.getInstance();
+    Map deviceInfo = (await DeviceInfoPlugin().deviceInfo).data;
+    if (deviceInfo['isPhysicalDevice'] == false ||
+        deviceInfo['brand'] == 'google') {
+      setState(() {
+        wrongDevice = true;
+      });
+    }
     if (instance.getString('url') == null) {
       await _remoteConfig.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 1),
@@ -38,14 +48,6 @@ class _HomePageState extends State<HomePage> {
         url = instance.getString('url');
       });
     }
-    // subscription = _remoteConfig.onConfigUpdated.listen((event) async {
-    //   await _remoteConfig.activate();
-
-    //   setState(() {
-    //     update = event;
-    //     instance.setString('url', url!);
-    //   });
-    // });
   }
 
   @override
@@ -57,13 +59,15 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: url != null
-          ? WebViewWidgetUrl(
-              url: url!,
-            )
-          : const Center(
-              child: CircularProgressIndicator(),
-            ),
+      body: !wrongDevice
+          ? url != null
+              ? WebViewWidgetUrl(
+                  url: url!,
+                )
+              : const Center(
+                  child: CircularProgressIndicator(),
+                )
+          : const WrongPhonesScreen(),
     );
   }
 }
@@ -75,8 +79,6 @@ class WebViewWidgetUrl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("somethingsomething");
-    print(url);
     WebViewController controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
@@ -89,6 +91,13 @@ class WebViewWidgetUrl extends StatelessWidget {
         ),
       )
       ..loadRequest(Uri.parse(url));
-    return WebViewWidget(controller: controller);
+    return WillPopScope(
+        onWillPop: () async {
+          if (await controller.canGoBack()) {
+            controller.goBack();
+          }
+          return false;
+        },
+        child: WebViewWidget(controller: controller));
   }
 }
