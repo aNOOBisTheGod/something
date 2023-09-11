@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -161,6 +162,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
                               List history = json.decode(
                                   instance.getString('history') ?? '[]');
                               history.add({
+                                'id': Random().nextInt(10000000),
                                 'title': titleController.text,
                                 'description': descriptionController.text,
                                 'date': DateFormat('dd-MM-yyyy – kk:mm')
@@ -206,24 +208,44 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  List<Widget> historyWidgets = [];
-  bool load = true;
+  List<HistoryWidget> historyWidgets = [];
 
   Future<void> fetchHistory() async {
     SharedPreferences instance = await SharedPreferences.getInstance();
     List history = json.decode(instance.getString('history') ?? '[]');
+    historyWidgets = [];
     for (var element in history) {
       historyWidgets.add(
         HistoryWidget(
-            title: element['title'],
-            description: element['description'],
-            date: element['date'],
-            time: element['time']),
+          id: element['id'],
+          title: element['title'],
+          description: element['description'],
+          date: element['date'],
+          time: element['time'],
+          onEdit: editNote,
+          onDelete: deleteNote,
+        ),
       );
     }
-    setState(() {
-      load = false;
-    });
+    setState(() {});
+  }
+
+  Future<void> deleteNote(int noteId) async {
+    SharedPreferences instance = await SharedPreferences.getInstance();
+    List history = json.decode(instance.getString('history') ?? '[]');
+    history.removeWhere((element) => element['id'] == noteId);
+    instance.setString('history', json.encode(history));
+    fetchHistory();
+  }
+
+  Future<void> editNote(int noteId, String title, String description) async {
+    SharedPreferences instance = await SharedPreferences.getInstance();
+    List history = json.decode(instance.getString('history') ?? '[]');
+    int index = history.indexWhere((element) => element['id'] == noteId);
+    history[index]['title'] = title;
+    history[index]['description'] = description;
+    instance.setString('history', json.encode(history));
+    fetchHistory();
   }
 
   @override
@@ -240,28 +262,36 @@ class _HistoryPageState extends State<HistoryPage> {
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor.withOpacity(.5),
       ),
-      body: load
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: historyWidgets.isNotEmpty
+          ? SingleChildScrollView(
               child: Column(
                 children: historyWidgets,
               ),
+            )
+          : const Center(
+              child: Text("Wow! So empty here!"),
             ),
     );
   }
 }
 
 class HistoryWidget extends StatelessWidget {
+  int id;
   String title;
   String description;
   String date;
   String time;
+  Function(int) onDelete;
+  Function(int, String, String) onEdit;
   HistoryWidget(
       {super.key,
+      required this.id,
       required this.title,
       required this.description,
       required this.date,
-      required this.time});
+      required this.time,
+      required this.onDelete,
+      required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +312,7 @@ class HistoryWidget extends StatelessWidget {
                   ),
                   Text(
                     date,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -292,11 +322,93 @@ class HistoryWidget extends StatelessWidget {
                     Text(time, style: Theme.of(context).textTheme.bodyLarge)),
           ]),
         ),
+        Padding(
+          padding: EdgeInsets.only(left: 16, bottom: 16),
+          child: Row(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        TextEditingController titleController =
+                            TextEditingController(text: title);
+                        TextEditingController descriptionController =
+                            TextEditingController(text: description);
+                        return Dialog(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  controller: titleController,
+                                  maxLength: 20,
+                                  decoration: const InputDecoration(
+                                    hintText: "Insert title",
+                                  ),
+                                ),
+                                TextField(
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  controller: descriptionController,
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: 8,
+                                  decoration: const InputDecoration(
+                                      hintText: "Insert description"),
+                                ),
+                                const SizedBox(
+                                  height: 30,
+                                ),
+                                ElevatedButton(
+                                    onPressed: () {
+                                      onEdit(id, titleController.text,
+                                          descriptionController.text);
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text("Save"))
+                              ],
+                            ),
+                          ),
+                        );
+                      });
+                },
+                child: const Text("Edit training"),
+              ),
+              Divider(
+                indent: 20,
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                            title: const Text("Attention"),
+                            content: const Text(
+                                "Do you really want to delete this training?"),
+                            actions: [
+                              ElevatedButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text("No")),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    onDelete(id);
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text("Yes"))
+                            ],
+                          ));
+                },
+                child: const Text("Delete training"),
+              )
+            ],
+          ),
+        ),
         Container(
           height: 1,
           color: Colors.grey.withOpacity(.5),
           width: MediaQuery.of(context).size.width * .8,
-        )
+        ),
       ],
     );
   }
