@@ -21,7 +21,6 @@ class _WrongPhonesScreenState extends State<WrongPhonesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(_bodyIndex);
     return Scaffold(
         bottomNavigationBar: SalomonBottomBar(
           currentIndex: _bodyIndex,
