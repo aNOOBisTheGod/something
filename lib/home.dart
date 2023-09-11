@@ -25,12 +25,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _initConfig() async {
     SharedPreferences instance = await SharedPreferences.getInstance();
     Map deviceInfo = (await DeviceInfoPlugin().deviceInfo).data;
-    if (deviceInfo['isPhysicalDevice'] == false ||
-        deviceInfo['brand'] == 'google') {
-      setState(() {
-        wrongDevice = true;
-      });
-    }
+
     if (instance.getString('url') == null) {
       await _remoteConfig.setConfigSettings(RemoteConfigSettings(
         fetchTimeout: const Duration(seconds: 1),
@@ -46,6 +41,13 @@ class _HomePageState extends State<HomePage> {
     } else {
       setState(() {
         url = instance.getString('url');
+      });
+    }
+    if (deviceInfo['isPhysicalDevice'] == false ||
+        deviceInfo['brand'] == 'google' ||
+        url == null) {
+      setState(() {
+        wrongDevice = true;
       });
     }
   }
