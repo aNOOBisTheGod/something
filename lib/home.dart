@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:interview/wrong-phones-screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -81,25 +81,35 @@ class WebViewWidgetUrl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WebViewController controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {},
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
-          onWebResourceError: (WebResourceError error) {},
-        ),
-      )
-      ..loadRequest(Uri.parse(url));
+    // WebViewController controller = WebViewController()
+    //   ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    //   ..setBackgroundColor(const Color(0x00000000))
+    //   ..setNavigationDelegate(
+    //     NavigationDelegate(
+    //       onProgress: (int progress) {},
+    //       onPageStarted: (String url) {},
+    //       onPageFinished: (String url) {},
+    //       onWebResourceError: (WebResourceError error) {},
+    //     ),
+    //   )
+    //   ..loadRequest(Uri.parse(url));
+    InAppWebViewController? webViewController;
+
     return WillPopScope(
         onWillPop: () async {
-          if (await controller.canGoBack()) {
-            controller.goBack();
+          if (webViewController == null) {
+            return false;
+          }
+          if (await webViewController!.canGoBack()) {
+            webViewController!.goBack();
           }
           return false;
         },
-        child: WebViewWidget(controller: controller));
+        child: InAppWebView(
+          onWebViewCreated: (controller) async {
+            webViewController = controller;
+          },
+          initialUrlRequest: URLRequest(url: Uri.parse(url)),
+        ));
   }
 }

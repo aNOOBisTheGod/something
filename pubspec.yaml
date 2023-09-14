@@ -38,7 +38,6 @@ dependencies:
   shared_preferences: ^2.2.1
   http: ^1.1.0
   firebase_remote_config: ^4.2.5
-  webview_flutter: ^4.2.4
   firebase_core: ^2.15.1
   firebase_analytics: ^10.4.5
   device_info_plus: ^9.0.3
@@ -46,6 +45,7 @@ dependencies:
   stop_watch_timer: ^3.0.1
   intl: ^0.18.1
   fluttertoast: ^8.2.2
+  flutter_inappwebview: ^5.7.2+3
 
 dev_dependencies:
   flutter_test:
