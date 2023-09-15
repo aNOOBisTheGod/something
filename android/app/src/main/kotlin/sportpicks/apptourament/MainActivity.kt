@@ -1,4 +1,4 @@
-package com.example.interview
+package sportpicks.apptourament
 
 import io.flutter.embedding.android.FlutterActivity
 

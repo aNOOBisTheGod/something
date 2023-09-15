@@ -105,11 +105,13 @@ class WebViewWidgetUrl extends StatelessWidget {
           }
           return false;
         },
-        child: InAppWebView(
-          onWebViewCreated: (controller) async {
-            webViewController = controller;
-          },
-          initialUrlRequest: URLRequest(url: Uri.parse(url)),
+        child: SafeArea(
+          child: InAppWebView(
+            onWebViewCreated: (controller) async {
+              webViewController = controller;
+            },
+            initialUrlRequest: URLRequest(url: Uri.parse(url)),
+          ),
         ));
   }
 }
